@@ -6,6 +6,8 @@ import * as vscode from 'vscode';
  */
 export class TerminalContentReader {
     private terminalDataMap: Map<string, string[]> = new Map();
+    private terminalIdMap: WeakMap<vscode.Terminal, string> = new WeakMap();
+    private terminalIdCounter: number = 0;
     private readonly maxBufferLines = 1000; // Keep last 1000 lines per terminal
 
     constructor(context: vscode.ExtensionContext) {
@@ -82,10 +84,14 @@ export class TerminalContentReader {
         return lines.join('\n');
     }
 
-    getRecentContent(terminal: vscode.Terminal, _since: number): string {
-        // Get content since timestamp
-        // For now, return last 50 lines as we don't track timestamps per line
-        return this.getTerminalContent(terminal, 50);
+    getLastNLines(terminal: vscode.Terminal, lastNLines: number = 50): string {
+        // Get the last N lines from the terminal buffer
+        const terminalId = this.getTerminalId(terminal);
+        const buffer = this.terminalDataMap.get(terminalId) || [];
+        
+        // Return last N lines
+        const lines = buffer.slice(-lastNLines);
+        return lines.join('\n');
     }
 
     clearBuffer(terminal: vscode.Terminal) {
@@ -98,10 +104,13 @@ export class TerminalContentReader {
     }
 
     private getTerminalId(terminal: vscode.Terminal): string {
-        // Create a unique ID for the terminal
-        // Use the terminal name and creation time if available
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return `${terminal.name}_${(terminal as any).creationTime || Date.now()}`;
+        // Use WeakMap to maintain stable IDs for terminals
+        let id = this.terminalIdMap.get(terminal);
+        if (!id) {
+            id = `terminal_${this.terminalIdCounter++}_${Date.now()}`;
+            this.terminalIdMap.set(terminal, id);
+        }
+        return id;
     }
 
     dispose() {

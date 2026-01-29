@@ -14,6 +14,8 @@ interface TerminalState {
 export class TerminalMonitor {
     private intervalId: NodeJS.Timeout | undefined;
     private terminalStates: Map<string, TerminalState> = new Map();
+    private terminalIdMap: WeakMap<vscode.Terminal, string> = new WeakMap();
+    private terminalIdCounter: number = 0;
     private aiService: AIService;
     private contentReader: TerminalContentReader;
     private isEnabled: boolean = false;
@@ -50,11 +52,21 @@ export class TerminalMonitor {
         const config = vscode.workspace.getConfiguration('terminalNotifier');
         const checkInterval = config.get<number>('checkInterval', 5000);
 
+        // Validate configuration
+        if (checkInterval < 1000) {
+            vscode.window.showWarningMessage('Terminal Notifier: Check interval must be at least 1000ms. Using default value.');
+            this.startMonitoring(5000);
+        } else {
+            this.startMonitoring(checkInterval);
+        }
+
+        console.log('Terminal monitoring enabled');
+    }
+
+    private startMonitoring(checkInterval: number) {
         this.intervalId = setInterval(() => {
             this.checkAllTerminals();
         }, checkInterval);
-
-        console.log('Terminal monitoring enabled');
     }
 
     disable() {
@@ -103,9 +115,13 @@ export class TerminalMonitor {
     }
 
     private getTerminalId(terminal: vscode.Terminal): string {
-        // Use a combination of name and creation time as unique ID
-        // Note: VSCode doesn't provide a stable terminal ID, so we use name
-        return `${terminal.name}_${terminal.creationOptions.name || 'default'}`;
+        // Use WeakMap to maintain stable IDs for terminals
+        let id = this.terminalIdMap.get(terminal);
+        if (!id) {
+            id = `terminal_${this.terminalIdCounter++}_${Date.now()}`;
+            this.terminalIdMap.set(terminal, id);
+        }
+        return id;
     }
 
     private async checkAllTerminals() {
@@ -119,7 +135,14 @@ export class TerminalMonitor {
 
         if (!apiEndpoint || !apiKey) {
             // Skip checking if API is not configured
+            console.debug('Terminal Notifier: API not configured. Skipping checks.');
             return;
+        }
+
+        // Validate cooldown
+        const cooldown = config.get<number>('notificationCooldown', 300000);
+        if (cooldown < 0) {
+            console.warn('Terminal Notifier: Invalid cooldown value. Using default.');
         }
 
         for (const terminal of vscode.window.terminals) {

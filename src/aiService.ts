@@ -24,14 +24,43 @@ export class AIService {
             return false;
         }
 
+        // Sanitize terminal content - warn about potential sensitive data
+        if (this.containsPotentiallySensitiveData(terminalContent)) {
+            console.warn('Terminal content may contain sensitive information. Consider excluding this terminal from monitoring.');
+        }
+
         try {
             const prompt = this.buildPrompt(terminalContent, terminalName);
             const response = await this.callAIAPI(apiEndpoint, apiKey, apiProvider, prompt);
             return this.parseResponse(response);
         } catch (error) {
-            console.error('Error calling AI API:', error);
+            const errorMessage = error instanceof Error ? error.message : String(error);
+            console.error('Error calling AI API:', errorMessage);
+            
+            // Provide user feedback on API errors
+            if (errorMessage.includes('401') || errorMessage.includes('403')) {
+                vscode.window.showErrorMessage('Terminal Notifier: API authentication failed. Please check your API key.');
+            } else if (errorMessage.includes('timeout')) {
+                console.warn('Terminal Notifier: API request timeout.');
+            } else if (errorMessage.includes('ECONNREFUSED') || errorMessage.includes('ENOTFOUND')) {
+                vscode.window.showErrorMessage('Terminal Notifier: Cannot connect to API endpoint. Please check your network and endpoint URL.');
+            }
+            
             return false;
         }
+    }
+
+    private containsPotentiallySensitiveData(content: string): boolean {
+        // Basic check for common sensitive patterns
+        const sensitivePatterns = [
+            /password[=:\s]/i,
+            /api[_-]?key[=:\s]/i,
+            /token[=:\s]/i,
+            /secret[=:\s]/i,
+            /authorization[=:\s]/i
+        ];
+        
+        return sensitivePatterns.some(pattern => pattern.test(content));
     }
 
     private buildPrompt(terminalContent: string, terminalName: string): string {
@@ -97,7 +126,17 @@ Do not provide any additional explanation.`;
             }
         );
 
-        return response.data.choices[0].message.content.trim();
+        // Add null safety checks
+        if (!response.data || !response.data.choices || response.data.choices.length === 0) {
+            throw new Error('Invalid response format from OpenAI API');
+        }
+
+        const message = response.data.choices[0]?.message?.content;
+        if (typeof message !== 'string') {
+            throw new Error('Invalid message content in OpenAI response');
+        }
+
+        return message.trim();
     }
 
     private async callClaude(endpoint: string, apiKey: string, prompt: string): Promise<string> {
@@ -123,7 +162,17 @@ Do not provide any additional explanation.`;
             }
         );
 
-        return response.data.content[0].text.trim();
+        // Add null safety checks
+        if (!response.data || !response.data.content || response.data.content.length === 0) {
+            throw new Error('Invalid response format from Claude API');
+        }
+
+        const text = response.data.content[0]?.text;
+        if (typeof text !== 'string') {
+            throw new Error('Invalid text content in Claude response');
+        }
+
+        return text.trim();
     }
 
     private async callCustomAPI(endpoint: string, apiKey: string, prompt: string): Promise<string> {
@@ -140,12 +189,23 @@ Do not provide any additional explanation.`;
             }
         );
 
-        // Expect response format: { "response": "YES" | "NO" }
-        return response.data.response || response.data.text || '';
+        // Add validation for response format
+        if (!response.data) {
+            throw new Error('Empty response from custom API');
+        }
+
+        // Expect response format: { "response": "YES" | "NO" } or { "text": "YES" | "NO" }
+        const result = response.data.response || response.data.text;
+        if (typeof result !== 'string') {
+            throw new Error('Invalid response format from custom API. Expected { "response": "YES"|"NO" } or { "text": "YES"|"NO" }');
+        }
+
+        return result;
     }
 
     private parseResponse(response: string): boolean {
         const normalized = response.toUpperCase().trim();
-        return normalized.includes('YES') || normalized === 'Y';
+        // Use strict matching to avoid false positives
+        return normalized === 'YES' || normalized === 'Y';
     }
 }

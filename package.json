@@ -36,7 +36,7 @@
         "terminalNotifier.apiKey": {
           "type": "string",
           "default": "",
-          "description": "API key for the AI service"
+          "description": "API key for the AI service (WARNING: Stored in plain text. Do not commit settings with API keys to version control. Consider using environment variables or VSCode SecretStorage for production use.)"
         },
         "terminalNotifier.apiProvider": {
           "type": "string",
