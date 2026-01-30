@@ -1,0 +1,93 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Lint code
+      run: npm run lint
+    
+    - name: Compile TypeScript
+      run: npm run compile
+    
+    - name: Install vsce
+      run: npm install -g @vscode/vsce
+    
+    - name: Package extension
+      run: vsce package
+    
+    - name: Get version from tag
+      id: get_version
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+    
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref_name }}
+        body: |
+          ## Release ${{ github.ref_name }}
+          
+          See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/CHANGELOG.md) for details.
+          
+          ### Installation
+          
+          1. Download the `.vsix` file from the assets below
+          2. In VSCode, go to Extensions view (Ctrl+Shift+X)
+          3. Click the "..." menu at the top
+          4. Select "Install from VSIX..."
+          5. Choose the downloaded `.vsix` file
+          
+          ### Features
+          
+          - Terminal monitoring with AI-powered notifications
+          - Support for OpenAI, Claude, and custom API endpoints
+          - Configurable check intervals and cooldown periods
+          - Smart notification system to prevent spam
+          
+          ### Configuration
+          
+          See the [README](https://github.com/${{ github.repository }}/blob/${{ github.ref_name }}/README.md) for configuration instructions.
+        draft: false
+        prerelease: false
+    
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./vscode-system-notifier-${{ steps.get_version.outputs.VERSION }}.vsix
+        asset_name: vscode-system-notifier-${{ steps.get_version.outputs.VERSION }}.vsix
+        asset_content_type: application/octet-stream
+    
+    - name: Publish to VSCode Marketplace (optional)
+      if: env.VSCE_PAT != ''
+      env:
+        VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      run: vsce publish -p $VSCE_PAT
+      continue-on-error: true

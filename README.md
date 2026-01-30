@@ -1,5 +1,7 @@
 # VSCode Terminal System Notifier
 
+[![Build Status](https://github.com/wang-zerui/vscode_system_notifier/actions/workflows/build.yml/badge.svg)](https://github.com/wang-zerui/vscode_system_notifier/actions/workflows/build.yml)
+
 一个用于监控VSCode终端事件并发送系统通知的扩展插件。当后台任务完成或需要用户操作时，自动通知用户。
 
 ## 功能特性
@@ -22,9 +24,20 @@
 
 ## 安装
 
+### 方式一：从VSCode扩展市场安装（推荐）
+
 1. 在VSCode扩展市场搜索 "Terminal System Notifier"
 2. 点击安装
 3. 配置API设置（见下方配置说明）
+
+### 方式二：从GitHub Releases安装
+
+1. 访问 [Releases页面](https://github.com/wang-zerui/vscode_system_notifier/releases)
+2. 下载最新的 `.vsix` 文件
+3. 在VSCode中，打开扩展视图（Ctrl+Shift+X）
+4. 点击顶部的 "..." 菜单
+5. 选择 "Install from VSIX..."
+6. 选择下载的 `.vsix` 文件
 
 ## 配置
 
@@ -182,6 +195,15 @@ npm run compile
 2. 按F5启动调试会话
 3. 在扩展开发主机中测试
 
+### 发布
+
+本项目使用GitHub Actions自动化构建和发布：
+
+- **自动构建**：每次push或PR到main/develop分支时自动运行
+- **自动发布**：推送版本标签（如`v0.0.2`）时自动创建GitHub Release
+
+详细的发布流程请参考 [RELEASE.md](./RELEASE.md)
+
 ## 许可证
 
 MIT
@@ -189,6 +211,8 @@ MIT
 ## 贡献
 
 欢迎提交Issue和Pull Request！
+
+本项目配置了GitHub Actions自动化工作流，确保代码质量和发布流程的一致性。
 
 ## 更新日志
 
@@ -198,4 +222,5 @@ MIT
 - 基本的终端监控功能
 - AI智能通知判断
 - 支持OpenAI、Claude和自定义API
+- 自动化构建和发布流程
 - 状态机管理避免重复通知

@@ -16,6 +16,9 @@ All notable changes to the "Terminal System Notifier" extension will be document
 - Command to clear state machine
 - Comprehensive configuration options
 - Shell integration for terminal content capture
+- GitHub Actions workflow for automated builds
+- GitHub Actions workflow for automated releases
+- Build status badge in README
 
 ### Features
 - Automatic terminal activity monitoring
@@ -24,3 +27,4 @@ All notable changes to the "Terminal System Notifier" extension will be document
 - Notification cooldown to avoid spam
 - Configurable minimum content length
 - Support for multiple AI providers
+- Automated CI/CD pipeline

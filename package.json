@@ -4,6 +4,14 @@
   "description": "Monitor terminal events and send system notifications when tasks complete or need attention",
   "version": "0.0.1",
   "publisher": "wang-zerui",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wang-zerui/vscode_system_notifier.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wang-zerui/vscode_system_notifier/issues"
+  },
+  "homepage": "https://github.com/wang-zerui/vscode_system_notifier#readme",
   "engines": {
     "vscode": "^1.85.0"
   },
