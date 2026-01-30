@@ -45,11 +45,6 @@
 
 ### 必需配置
 
-- **API Endpoint**: AI API端点URL
-  - OpenAI: `https://api.openai.com/v1/chat/completions`
-  - Claude: `https://api.anthropic.com/v1/messages`
-  - 或使用自定义API端点
-
 - **API Key**: 您的AI服务API密钥
 
 - **API Provider**: 选择API提供商
@@ -61,6 +56,16 @@
 
 - **Enable Monitoring** (默认: true)
   - 启用或禁用终端监控
+
+- **API Endpoint** (默认: 空)
+  - 自定义AI API端点URL（可选）
+  - 留空使用默认URL：
+    - OpenAI: `https://api.openai.com/v1/chat/completions`
+    - Claude: `https://api.anthropic.com/v1/messages`
+  - 可以指定：
+    - 代理服务器URL
+    - 自托管API端点
+    - 第三方兼容API（如Azure OpenAI）
 
 - **Check Interval** (默认: 5000ms)
   - 检查终端内容的时间间隔（毫秒）
@@ -91,29 +96,45 @@
 
 ## 配置示例
 
-### 使用OpenAI
+### 使用OpenAI（默认URL）
 
 ```json
 {
   "terminalNotifier.enabled": true,
-  "terminalNotifier.apiEndpoint": "https://api.openai.com/v1/chat/completions",
   "terminalNotifier.apiKey": "sk-your-api-key-here",
-  "terminalNotifier.apiProvider": "openai",
-  "terminalNotifier.checkInterval": 5000,
-  "terminalNotifier.notificationCooldown": 300000
+  "terminalNotifier.apiProvider": "openai"
 }
 ```
 
-### 使用Claude
+### 使用OpenAI（自定义URL - 如Azure OpenAI）
 
 ```json
 {
   "terminalNotifier.enabled": true,
-  "terminalNotifier.apiEndpoint": "https://api.anthropic.com/v1/messages",
+  "terminalNotifier.apiEndpoint": "https://your-resource.openai.azure.com/openai/deployments/your-deployment/chat/completions?api-version=2024-02-15-preview",
+  "terminalNotifier.apiKey": "your-azure-api-key",
+  "terminalNotifier.apiProvider": "openai"
+}
+```
+
+### 使用Claude（默认URL）
+
+```json
+{
+  "terminalNotifier.enabled": true,
   "terminalNotifier.apiKey": "your-api-key-here",
-  "terminalNotifier.apiProvider": "claude",
-  "terminalNotifier.checkInterval": 5000,
-  "terminalNotifier.notificationCooldown": 300000
+  "terminalNotifier.apiProvider": "claude"
+}
+```
+
+### 使用Claude（自定义URL - 如代理服务器）
+
+```json
+{
+  "terminalNotifier.enabled": true,
+  "terminalNotifier.apiEndpoint": "https://your-proxy.com/v1/messages",
+  "terminalNotifier.apiKey": "your-api-key-here",
+  "terminalNotifier.apiProvider": "claude"
 }
 ```
 

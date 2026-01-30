@@ -10,25 +10,33 @@
 
 打开VSCode设置 (Ctrl+, 或 Cmd+,)，搜索 "Terminal Notifier"，然后配置：
 
-#### 使用OpenAI示例：
+#### 最简配置（使用默认URL）：
 
+**OpenAI:**
 ```json
 {
-  "terminalNotifier.enabled": true,
-  "terminalNotifier.apiEndpoint": "https://api.openai.com/v1/chat/completions",
   "terminalNotifier.apiKey": "sk-your-openai-api-key",
   "terminalNotifier.apiProvider": "openai"
 }
 ```
 
-#### 使用Claude示例：
+**Claude:**
+```json
+{
+  "terminalNotifier.apiKey": "your-claude-api-key",
+  "terminalNotifier.apiProvider": "claude"
+}
+```
+
+#### 自定义URL（可选）：
+
+如果需要使用代理、自托管服务或Azure OpenAI等，可以指定自定义endpoint：
 
 ```json
 {
-  "terminalNotifier.enabled": true,
-  "terminalNotifier.apiEndpoint": "https://api.anthropic.com/v1/messages",
-  "terminalNotifier.apiKey": "your-claude-api-key",
-  "terminalNotifier.apiProvider": "claude"
+  "terminalNotifier.apiEndpoint": "https://your-custom-endpoint.com/v1/chat/completions",
+  "terminalNotifier.apiKey": "your-api-key",
+  "terminalNotifier.apiProvider": "openai"
 }
 ```
 

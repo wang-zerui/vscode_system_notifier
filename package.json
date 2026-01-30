@@ -39,7 +39,7 @@
         "terminalNotifier.apiEndpoint": {
           "type": "string",
           "default": "",
-          "description": "AI API endpoint URL (e.g., OpenAI, Claude, or custom endpoint)"
+          "description": "Custom AI API endpoint URL (optional). Leave empty to use default URLs. For OpenAI: https://api.openai.com/v1/chat/completions, For Claude: https://api.anthropic.com/v1/messages, or specify your own custom endpoint."
         },
         "terminalNotifier.apiKey": {
           "type": "string",
