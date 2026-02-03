@@ -1,0 +1,108 @@
+{
+  "name": "vscode-system-notifier",
+  "displayName": "Terminal System Notifier",
+  "description": "Monitor terminal events and send system notifications when tasks complete or need attention",
+  "version": "0.0.1",
+  "publisher": "wang-zerui",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wang-zerui/vscode_system_notifier.git"
+  },
+  "bugs": {
+    "url": "https://github.com/wang-zerui/vscode_system_notifier/issues"
+  },
+  "homepage": "https://github.com/wang-zerui/vscode_system_notifier#readme",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "Terminal System Notifier",
+      "properties": {
+        "terminalNotifier.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable terminal monitoring and notifications"
+        },
+        "terminalNotifier.checkInterval": {
+          "type": "number",
+          "default": 5000,
+          "description": "Interval in milliseconds to check terminal content (default: 5000ms)"
+        },
+        "terminalNotifier.apiEndpoint": {
+          "type": "string",
+          "default": "",
+          "description": "Custom AI API endpoint URL (optional). Leave empty to use default URLs. For OpenAI: https://api.openai.com/v1/chat/completions, For Claude: https://api.anthropic.com/v1/messages, or specify your own custom endpoint."
+        },
+        "terminalNotifier.apiKey": {
+          "type": "string",
+          "default": "",
+          "description": "API key for the AI service (WARNING: Stored in plain text. Do not commit settings with API keys to version control. Consider using environment variables or VSCode SecretStorage for production use.)"
+        },
+        "terminalNotifier.apiProvider": {
+          "type": "string",
+          "enum": [
+            "openai",
+            "claude",
+            "custom"
+          ],
+          "default": "openai",
+          "description": "AI API provider type"
+        },
+        "terminalNotifier.minContentLength": {
+          "type": "number",
+          "default": 50,
+          "description": "Minimum terminal content length before checking with AI"
+        },
+        "terminalNotifier.notificationCooldown": {
+          "type": "number",
+          "default": 300000,
+          "description": "Cooldown period in milliseconds before sending another notification for the same terminal (default: 5 minutes)"
+        }
+      }
+    },
+    "commands": [
+      {
+        "command": "terminalNotifier.enable",
+        "title": "Terminal Notifier: Enable Monitoring"
+      },
+      {
+        "command": "terminalNotifier.disable",
+        "title": "Terminal Notifier: Disable Monitoring"
+      },
+      {
+        "command": "terminalNotifier.checkNow",
+        "title": "Terminal Notifier: Check All Terminals Now"
+      },
+      {
+        "command": "terminalNotifier.clearState",
+        "title": "Terminal Notifier: Clear State Machine"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^18.x",
+    "@types/vscode": "^1.85.0",
+    "@typescript-eslint/eslint-plugin": "^6.15.0",
+    "@typescript-eslint/parser": "^6.15.0",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "axios": "^1.12.0"
+  }
+}
