@@ -1,0 +1,129 @@
+name: Auto Build and Release
+
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - '*.md'
+      - 'LICENSE'
+      - '.gitignore'
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Lint code
+      run: npm run lint
+    
+    - name: Compile TypeScript
+      run: npm run compile
+    
+    - name: Check compilation artifacts
+      run: |
+        if [ ! -d "out" ]; then
+          echo "Error: out directory not created"
+          exit 1
+        fi
+        if [ ! -f "out/extension.js" ]; then
+          echo "Error: extension.js not compiled"
+          exit 1
+        fi
+        echo "Build successful! Artifacts created:"
+        ls -lh out/
+    
+    - name: Install vsce
+      run: npm install -g @vscode/vsce
+    
+    - name: Generate version
+      id: version
+      run: |
+        # Get the base version from package.json
+        BASE_VERSION=$(node -p "require('./package.json').version")
+        # Generate a build number based on date and short commit hash
+        BUILD_DATE=$(date +'%Y%m%d')
+        SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)
+        # Create a unique version: base-date.sha
+        VERSION="${BASE_VERSION}-${BUILD_DATE}.${SHORT_SHA}"
+        echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+        echo "Generated version: $VERSION"
+    
+    - name: Update package.json version for packaging
+      run: |
+        # Temporarily update version for vsce package
+        # Use --allow-same-version to prevent errors if version matches
+        npm version ${{ steps.version.outputs.VERSION }} --no-git-tag-version --allow-same-version
+    
+    - name: Package extension
+      run: vsce package
+    
+    - name: Find VSIX file
+      id: find_vsix
+      run: |
+        VSIX_FILE=$(find . -maxdepth 1 -name '*.vsix' -print -quit)
+        if [ -z "$VSIX_FILE" ]; then
+          echo "Error: No VSIX file found"
+          exit 1
+        fi
+        # Remove leading ./ if present
+        VSIX_FILE="${VSIX_FILE#./}"
+        echo "VSIX_FILE=$VSIX_FILE" >> $GITHUB_OUTPUT
+        echo "Found VSIX file: $VSIX_FILE"
+    
+    - name: Create Release
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: auto-${{ steps.version.outputs.VERSION }}
+        name: Auto Release ${{ steps.version.outputs.VERSION }}
+        body: |
+          ## Automatic Release ${{ steps.version.outputs.VERSION }}
+          
+          This is an automated release triggered by commit ${{ github.sha }}.
+          
+          **Commit:** ${{ github.event.head_commit.message }}
+          
+          **Author:** ${{ github.event.head_commit.author.name }}
+          
+          See [CHANGELOG.md](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
+          
+          ### Installation
+          
+          1. Download the `.vsix` file from the assets below
+          2. In VSCode, go to Extensions view (Ctrl+Shift+X)
+          3. Click the "..." menu at the top
+          4. Select "Install from VSIX..."
+          5. Choose the downloaded `.vsix` file
+          
+          ### Features
+          
+          - Terminal monitoring with AI-powered notifications
+          - Support for OpenAI, Claude, and custom API endpoints
+          - Configurable check intervals and cooldown periods
+          - Smart notification system to prevent spam
+          
+          ### Configuration
+          
+          See the [README](https://github.com/${{ github.repository }}/blob/main/README.md) for configuration instructions.
+        draft: false
+        prerelease: true
+        files: ${{ steps.find_vsix.outputs.VSIX_FILE }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

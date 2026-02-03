@@ -4,6 +4,27 @@ This document describes the automated release process for the VSCode Terminal Sy
 
 ## Automated Workflows
 
+### Auto Build and Release Workflow (`.github/workflows/auto-release.yml`)
+
+**NEW!** Automatically runs on every push to the `main` branch (excluding documentation-only changes).
+
+**Steps:**
+1. Checks out code
+2. Sets up Node.js 20.x
+3. Installs dependencies
+4. Runs linter
+5. Compiles TypeScript
+6. Validates build artifacts
+7. Generates a unique version based on base version + date + commit SHA
+8. Packages extension as `.vsix` file
+9. Creates GitHub pre-release with:
+   - Auto-generated release notes
+   - Commit information
+   - Installation instructions
+10. Uploads `.vsix` file as release asset
+
+**Note:** These auto-releases are marked as pre-releases. For stable releases, use the tag-based release workflow below.
+
 ### Build Workflow (`.github/workflows/build.yml`)
 
 Automatically runs on:
