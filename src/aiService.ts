@@ -18,6 +18,7 @@ export class AIService {
         const apiEndpoint = config.get<string>('apiEndpoint', '');
         const apiKey = config.get<string>('apiKey', '');
         const apiProvider = config.get<string>('apiProvider', 'openai');
+        const modelName = config.get<string>('modelName', '');
 
         if (!apiEndpoint || !apiKey) {
             console.warn('AI API not configured');
@@ -31,7 +32,7 @@ export class AIService {
 
         try {
             const prompt = this.buildPrompt(terminalContent, terminalName);
-            const response = await this.callAIAPI(apiEndpoint, apiKey, apiProvider, prompt);
+            const response = await this.callAIAPI(apiEndpoint, apiKey, apiProvider, modelName, prompt);
             return this.parseResponse(response);
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : String(error);
@@ -85,13 +86,14 @@ Do not provide any additional explanation.`;
         endpoint: string,
         apiKey: string,
         provider: string,
+        modelName: string,
         prompt: string
     ): Promise<string> {
         switch (provider) {
             case 'openai':
-                return this.callOpenAI(endpoint, apiKey, prompt);
+                return this.callOpenAI(endpoint, apiKey, modelName, prompt);
             case 'claude':
-                return this.callClaude(endpoint, apiKey, prompt);
+                return this.callClaude(endpoint, apiKey, modelName, prompt);
             case 'custom':
                 return this.callCustomAPI(endpoint, apiKey, prompt);
             default:
@@ -99,13 +101,14 @@ Do not provide any additional explanation.`;
         }
     }
 
-    private async callOpenAI(endpoint: string, apiKey: string, prompt: string): Promise<string> {
+    private async callOpenAI(endpoint: string, apiKey: string, modelName: string, prompt: string): Promise<string> {
         const url = endpoint || 'https://api.openai.com/v1/chat/completions';
+        const model = modelName || 'gpt-3.5-turbo';
         
         const response = await this.axiosInstance.post(
             url,
             {
-                model: 'gpt-3.5-turbo',
+                model,
                 messages: [
                     {
                         role: 'system',
@@ -139,13 +142,14 @@ Do not provide any additional explanation.`;
         return message.trim();
     }
 
-    private async callClaude(endpoint: string, apiKey: string, prompt: string): Promise<string> {
+    private async callClaude(endpoint: string, apiKey: string, modelName: string, prompt: string): Promise<string> {
         const url = endpoint || 'https://api.anthropic.com/v1/messages';
+        const model = modelName || 'claude-3-haiku-20240307';
         
         const response = await this.axiosInstance.post(
             url,
             {
-                model: 'claude-3-haiku-20240307',
+                model,
                 max_tokens: 10,
                 messages: [
                     {

@@ -67,6 +67,15 @@
     - 自托管API端点
     - 第三方兼容API（如Azure OpenAI）
 
+- **Model Name** (默认: 空)
+  - 自定义AI模型名称（可选）
+  - 留空使用默认模型：
+    - OpenAI: `gpt-3.5-turbo`
+    - Claude: `claude-3-haiku-20240307`
+  - 可以指定其他模型，如：
+    - OpenAI: `gpt-4`, `gpt-4-turbo`, `gpt-4o`
+    - Claude: `claude-3-sonnet-20240229`, `claude-3-opus-20240229`
+
 - **Check Interval** (默认: 5000ms)
   - 检查终端内容的时间间隔（毫秒）
 
@@ -96,13 +105,24 @@
 
 ## 配置示例
 
-### 使用OpenAI（默认URL）
+### 使用OpenAI（默认URL和模型）
 
 ```json
 {
   "terminalNotifier.enabled": true,
   "terminalNotifier.apiKey": "sk-your-api-key-here",
   "terminalNotifier.apiProvider": "openai"
+}
+```
+
+### 使用OpenAI（自定义模型 - 如GPT-4）
+
+```json
+{
+  "terminalNotifier.enabled": true,
+  "terminalNotifier.apiKey": "sk-your-api-key-here",
+  "terminalNotifier.apiProvider": "openai",
+  "terminalNotifier.modelName": "gpt-4"
 }
 ```
 
@@ -117,13 +137,24 @@
 }
 ```
 
-### 使用Claude（默认URL）
+### 使用Claude（默认URL和模型）
 
 ```json
 {
   "terminalNotifier.enabled": true,
   "terminalNotifier.apiKey": "your-api-key-here",
   "terminalNotifier.apiProvider": "claude"
+}
+```
+
+### 使用Claude（自定义模型 - 如Claude 3 Opus）
+
+```json
+{
+  "terminalNotifier.enabled": true,
+  "terminalNotifier.apiKey": "your-api-key-here",
+  "terminalNotifier.apiProvider": "claude",
+  "terminalNotifier.modelName": "claude-3-opus-20240229"
 }
 ```
 
